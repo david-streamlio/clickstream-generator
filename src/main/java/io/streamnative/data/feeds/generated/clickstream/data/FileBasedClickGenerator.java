@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.zip.GZIPInputStream;
 
 public class FileBasedClickGenerator implements ClickGenerator {
 
@@ -22,8 +23,13 @@ public class FileBasedClickGenerator implements ClickGenerator {
 
     public FileBasedClickGenerator(PushSource pushSource) {
         this.pushSource = pushSource;
-        inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("user_behavior.txt");
-        reader = new BufferedReader(new InputStreamReader(inputStream));
+        try {
+            inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("user_behavior.txt.gz");
+            GZIPInputStream gzip = new GZIPInputStream(inputStream);
+            reader = new BufferedReader(new InputStreamReader(gzip));
+        } catch (final IOException ioEx) {
+            System.err.println(ioEx);
+        }
     }
 
     @Override
