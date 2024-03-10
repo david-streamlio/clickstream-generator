@@ -4,13 +4,23 @@ import org.apache.pulsar.common.functions.FunctionConfig;
 import org.apache.pulsar.common.io.SourceConfig;
 import org.apache.pulsar.functions.LocalRunner;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ClickstreamSourceLocalRunner {
+
+    private static final Map<String, Object> CONFIGS = new HashMap<>();
+
+    static {
+        CONFIGS.put("resource", "/home/david/clone-zone/personal/clickstream-generator/src/main/resources/user_behavior.txt.gz");
+    }
 
     public static void main(String[] args) throws Exception {
 
         SourceConfig sourceConfig =
                 SourceConfig.builder()
                         .className(ClickstreamSource.class.getName())
+                        .configs(CONFIGS)
                         .name("click-simulator")
                         .topicName("persistent://public/default/clicks-in")
                         .processingGuarantees(FunctionConfig.ProcessingGuarantees.ATMOST_ONCE)
@@ -24,7 +34,7 @@ public class ClickstreamSourceLocalRunner {
                         .build();
 
         localRunner.start(false);
-        Thread.sleep(120 * 1000);
+        Thread.sleep(240 * 1000);
         localRunner.stop();
     }
 }

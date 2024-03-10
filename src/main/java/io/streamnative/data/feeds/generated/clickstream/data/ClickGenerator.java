@@ -1,6 +1,7 @@
 package io.streamnative.data.feeds.generated.clickstream.data;
 
-public interface ClickGenerator {
+import java.io.Closeable;
 
+public interface ClickGenerator extends Closeable {
     public void generate();
 }

@@ -2,17 +2,11 @@ package io.streamnative.data.feeds.generated.clickstream.data;
 
 import org.apache.pulsar.io.core.PushSource;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.zip.GZIPInputStream;
 
-public class FileBasedClickGenerator implements ClickGenerator {
-
-    private static Instant now = Instant.now().minus(20, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
+public class FileBasedClickGenerator implements ClickGenerator, Closeable {
 
     private InputStream inputStream;
 
@@ -21,12 +15,12 @@ public class FileBasedClickGenerator implements ClickGenerator {
 
     private PushSource pushSource;
 
-    public FileBasedClickGenerator(PushSource pushSource) {
+    public FileBasedClickGenerator(PushSource pushSource, String resourceName) {
         this.pushSource = pushSource;
+
         try {
-            inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("user_behavior.txt.gz");
-            GZIPInputStream gzip = new GZIPInputStream(inputStream);
-            reader = new BufferedReader(new InputStreamReader(gzip));
+            inputStream = new FileInputStream(resourceName);
+            reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
         } catch (final IOException ioEx) {
             System.err.println(ioEx);
         }
@@ -34,14 +28,21 @@ public class FileBasedClickGenerator implements ClickGenerator {
 
     @Override
     public void generate() {
+        int counter = 0;
         Click click;
         while ((click = getClick()) != null) {
             this.pushSource.consume(new ClickRecord(click));
+            counter++;
         }
-        this.pushSource.consume(new ClickRecord(null));
+        System.out.println(String.format("Generated %d events ", counter));
     }
 
-    public Click getClick() {
+    public void close() throws IOException {
+        this.reader.close();
+        this.inputStream.close();
+    }
+
+    private Click getClick() {
         if (reader == null) {
             return null;
         }
@@ -57,7 +58,7 @@ public class FileBasedClickGenerator implements ClickGenerator {
         return null;
     }
 
-    private static Click parse(String s) {
+    private Click parse(String s) {
         Click click = new Click();
         String[] fields = s.split(",");
 
@@ -65,8 +66,7 @@ public class FileBasedClickGenerator implements ClickGenerator {
         click.setItem_id(fields[1]);
         click.setCategory(fields[2]);
         click.setBehavior(fields[3]);
-        click.setTs(now.plus(Long.parseLong(fields[4]), ChronoUnit.MILLIS)
-                .truncatedTo(ChronoUnit.SECONDS).toString());
+        click.setTs(Instant.ofEpochMilli(Long.parseLong(fields[4]) * 1000).toString());
         return click;
     }
 }
