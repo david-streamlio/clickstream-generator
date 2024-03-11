@@ -12,7 +12,7 @@ public class ClickstreamSourceLocalRunner {
     private static final Map<String, Object> CONFIGS = new HashMap<>();
 
     static {
-        CONFIGS.put("resource", "/home/david/clone-zone/personal/clickstream-generator/src/main/resources/user_behavior.txt.gz");
+        CONFIGS.put("resource", "user_behavior.log.gz");
     }
 
     public static void main(String[] args) throws Exception {

@@ -11,7 +11,7 @@ public class Click {
 
     private String item_id;
 
-    private String category;
+    private String category_id;
 
     private String behavior;
 

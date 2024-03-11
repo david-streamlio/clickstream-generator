@@ -19,7 +19,8 @@ public class FileBasedClickGenerator implements ClickGenerator, Closeable {
         this.pushSource = pushSource;
 
         try {
-            inputStream = new FileInputStream(resourceName);
+           // inputStream = new FileInputStream(resourceName);
+            inputStream = getClass().getClassLoader().getResourceAsStream(resourceName);
             reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
         } catch (final IOException ioEx) {
             System.err.println(ioEx);
@@ -64,7 +65,7 @@ public class FileBasedClickGenerator implements ClickGenerator, Closeable {
 
         click.setUser_id(fields[0]);
         click.setItem_id(fields[1]);
-        click.setCategory(fields[2]);
+        click.setCategory_id(fields[2]);
         click.setBehavior(fields[3]);
         click.setTs(Instant.ofEpochMilli(Long.parseLong(fields[4]) * 1000).toString());
         return click;
